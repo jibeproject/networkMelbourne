@@ -1,6 +1,6 @@
 # nodes_current <-combinedUndirectedAndDirected2[[1]]
 # edges_current <-combinedUndirectedAndDirected2[[2]]
-makeEdgesDirect <- function(nodes_current,edges_current){
+makeEdgesDirect <- function(nodes_current,edges_current,outputCrs){
   
   # nodes_coords <- nodes_current %>%
   #   st_drop_geometry() %>%
@@ -15,10 +15,9 @@ makeEdgesDirect <- function(nodes_current,edges_current){
     left_join(st_drop_geometry(nodes_current),by=c("to_id"="id")) %>%
     rename(toX=X,toY=Y) %>%
     mutate(geom=paste0("LINESTRING(",fromX," ",fromY,",",toX," ",toY,")")) %>%
-    st_as_sf(wkt = "geom", crs = 28355)
+    st_as_sf(wkt = "geom", crs = outputCrs)
   return(list(nodes_current,edges_current))
 }
-
 
 # nodes_current <-combinedUndirectedAndDirected2[[1]]
 # edges_current <-combinedUndirectedAndDirected2[[2]]
@@ -38,8 +37,7 @@ makeEdgesUnDirect <- function(nodes_current,edges_current){
   return(list(nodes_current,edges_current))
 }
 
-
-makeEdgesDirect2 <- function(nodes_current,edges_current){
+makeEdgesDirect2 <- function(nodes_current,edges_current,outputCrs){
   
   # nodes_coords <- nodes_current %>%
   #   st_drop_geometry() %>%
@@ -49,6 +47,6 @@ makeEdgesDirect2 <- function(nodes_current,edges_current){
   edges_current <- edges_current %>%
     st_drop_geometry() %>%
     mutate(geom=paste0("LINESTRING(",fromX," ",fromY,",",toX," ",toY,")")) %>%
-    st_as_sf(wkt = "geom", crs = 28355)
+    st_as_sf(wkt = "geom", crs = outputCrs)
   return(list(nodes_current,edges_current))
 }
