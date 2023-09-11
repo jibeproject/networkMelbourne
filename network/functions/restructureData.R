@@ -39,7 +39,7 @@ restructureData <- function(networkList, highway_lookup,
                         false = if_else(as.logical(is_signal), 
                                         true = "signalised_intersection",
                                         false = "simple_intersection"))) %>% 
-    dplyr::select(id, x, y, type, geom) %>% 
+    dplyr::select(id, x, y, is_crossing, type, geom) %>% 
     distinct(id, .keep_all=T)
   
   # Bike hierarchy:
@@ -65,7 +65,7 @@ restructureData <- function(networkList, highway_lookup,
     mutate(cycleway=ifelse(cycleway==2, "simple_lane"   , cycleway)) %>%
     mutate(cycleway=ifelse(cycleway==1, "shared_street" , cycleway)) %>%
     mutate(cycleway=ifelse(cycleway==0, NA              , cycleway)) %>%
-    dplyr::select(from_id, to_id, fromX, fromY, toX, toY, length, freespeed, 
+    dplyr::select(osm_id, from_id, to_id, fromX, fromY, toX, toY, length, freespeed, 
                   permlanes, capacity, highway, is_oneway, cycleway, surface, 
                   is_cycle, is_walk, is_car, modes) %>%
     mutate(id=NA) %>%

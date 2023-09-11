@@ -5,7 +5,7 @@ addGtfsLinks <- function(outputLocation="./test/",
                          analysis_start = as.Date("2019-10-11","%Y-%m-%d"), 
                          analysis_end = as.Date("2019-10-17","%Y-%m-%d"),
                          studyRegion=NA,
-                         outputCrs=28355){
+                         outputCrs=outputCrs){
   # outputLocation="./gtfs/"
   # nodes=networkRestructured[[1]]
   # links=networkRestructured[[2]]
@@ -123,7 +123,7 @@ processGtfs <- function(outputLocation="./test/",
     st_snap_to_grid(1)
   
   # only want stops within the study region
-  if(!is.na(st_geometry(studyRegion))){
+  if(!is.na(studyRegion)){
     message("Cropping to study region")
     validStops <- validStops %>%
       filter(lengths(st_intersects(., studyRegion)) > 0)
@@ -219,13 +219,25 @@ exportGtfsSchedule <- function(links,
                                stopTable,
                                outputCrs){
   
+  # duplicate stopTimes where arrrival time is at or after 24:00:00, so timetable contains early morning entries
+  earlyMorningStopTimes <- stopTimes %>%
+    filter(departure_time >= 86400) %>% # 86400 is the number of seconds in 24 hours
+    mutate(arrival_time = arrival_time - 86400,
+           departure_time = departure_time - 86400,
+           trip_id_orig = trip_id, # original trip_id
+           trip_id = paste0(trip_id, "_E"))  # add 'E' (early) to trip_id, so copy is distinguished in creating ptNetwork
   
-  vehicleTripMatching <- trips %>%
-    left_join(routes,by="route_id")
+  # add orig trip id field to stopTimes (so 'trip_id' will  distinguish duplicated 'early' trip id's, 
+  # while 'orig_trip_id' will be used to join other tables containing only the original trip id's
+  stopTimes <- stopTimes %>%
+    mutate(trip_id_orig = trip_id)
+  
+  # combine with early morning stop times
+  stopTimes <- bind_rows(stopTimes, earlyMorningStopTimes)
   
   # the public transport network
   ptNetwork <- stopTimes %>%
-    dplyr::select(trip_id,arrival_time,departure_time,from_id=stop_id,from_x=x,from_y=y) %>%
+    dplyr::select(trip_id,arrival_time,departure_time,from_id=stop_id,from_x=x,from_y=y, trip_id_orig) %>%
     # filter(row_number()<200) %>%
     group_by(trip_id) %>%
     mutate(arrivalOffset=arrival_time-min(arrival_time)) %>%
@@ -244,9 +256,12 @@ exportGtfsSchedule <- function(links,
            arrival_time=as.character(as_hms(arrival_time)),
            departure_time=as.character(as_hms(departure_time))) %>%
     # join trips and routes, so that service_type (from routes) can be used in stop_id
-    left_join(., trips, by = "trip_id") %>%
+    left_join(., trips, by = c("trip_id_orig" = "trip_id")) %>%
     left_join(., routes, by = "route_id") %>%
     as.data.frame()
+  
+  vehicleTripMatching <- ptNetwork %>%
+    distinct(route_id, service_id, trip_id, service_type)
   
   arrivalTimes <- ptNetwork %>%
     dplyr::select(arrival_time,trip_id) %>%
@@ -307,8 +322,7 @@ exportGtfsSchedule <- function(links,
   # ./data/transitVehicles.xml: vehicle
   # id is just the trip_id. This means we can potentially have a different vehicle 
   # for each trip. Have also set the vehicle type here.
-  vehicles <- trips %>%
-    inner_join(routes,by="route_id") %>%
+  vehicles <- vehicleTripMatching %>%
     dplyr::select(id=trip_id,service_type) %>%
     arrange(id,service_type) %>%
     as.data.frame()
@@ -489,12 +503,12 @@ exportGtfsSchedule <- function(links,
       str<-paste0(str,"    </transitRoute>\n")
     }
     
-    if (i%%writeInterval==0 || i==nrow(vehicleTripMatching)) {
+    if (i%%writeInterval==0 || i==length(transitRoutes)) {
       cat(str,file=outxml,append=TRUE)
       str<-"" # clear the buffer after writing it out
     }
     # report progress
-    if (i%%50==0 || i==nrow(vehicleTripMatching)) printProgress(i,nrow(vehicleTripMatching),' vehicleTripMatching')
+    if (i%%50==0 || i==length(transitRoutes)) printProgress(i,length(transitRoutes),' vehicleTripMatching')
   }
   cat(paste0("  </transitLine>\n"),file=outxml,append=TRUE)
   cat(paste0("</transitSchedule>\n"),file=outxml,append=TRUE)
