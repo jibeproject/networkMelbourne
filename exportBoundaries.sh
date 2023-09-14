@@ -62,9 +62,27 @@ ogr2ogr \
   PG:"dbname=${DB_NAME} user=postgres" \
   sa2
 
+ogr2ogr \
+  -nln sa3 \
+  -unsetFid \
+  -update \
+  -overwrite \
+  -f SQLite \
+  -dsco SPATIALITE=yes \
+  "./data/sa3.sqlite" \
+  PG:"dbname=${DB_NAME} user=postgres" \
+  sa3
 
-
-
+ogr2ogr \
+  -nln sos \
+  -unsetFid \
+  -update \
+  -overwrite \
+  -f SQLite \
+  -dsco SPATIALITE=yes \
+  "./data/urban_regions.sqlite" \
+  PG:"dbname=${DB_NAME} user=postgres" \
+  sos
 
 
 
