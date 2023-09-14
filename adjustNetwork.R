@@ -14,14 +14,10 @@ options(dplyr.summarise.inform = FALSE) # make dplyr stop blabbing about summari
 nodesmel = st_read("data/melbourneClipped_nodes.sqlite")
 edgesmel = st_read("data/melbourneClipped_edges.sqlite")
 # shouldn't be any multi-linestrings, but better to be certain
-<<<<<<< HEAD
 edgesmel <- edgesmel %>%
   st_cast("LINESTRING") %>%
   mutate(osm_id_full=osm_id)
 edgesmel$osm_id <- gsub("_.*", "", edgesmel$osm_id)
-=======
-edgesmel <- edgesmel %>% st_cast("LINESTRING")
->>>>>>> 0d75494290f990df2eeffe98b3276ce3711da648
 
 
 
@@ -51,7 +47,7 @@ nodes <- nodesmel %>%
   mutate(id=as.integer(id)) %>%
   mutate(z=as.integer(z)) %>%
   select(nodeID=id,z_coor=z,ped_cros,cyc_cros)
-  
+
 st_write(nodes, "./output/nodesMelbourne.gpkg", delete_dsn = T)
 
 
@@ -70,7 +66,7 @@ crossing_count <- edgesmel %>%
   group_by(edgeID) %>%
   summarise(crs_cnt=sum(ped_cros,na.rm=T),bik_cnt=sum(cyc_cros,na.rm=T)) %>%
   ungroup()
-  
+
 # roadtype table
 roadtyp <- read.csv("data/roadtyp.csv")
 
@@ -78,11 +74,7 @@ roadtyp <- read.csv("data/roadtyp.csv")
 edge_attributes <- readRDS("data/POIs_joined.rds")
 
 edges <- edgesmel %>%
-<<<<<<< HEAD
   # st_drop_geometry() %>%
-=======
-  st_drop_geometry() %>%
->>>>>>> 0d75494290f990df2eeffe98b3276ce3711da648
   left_join(edge_attributes, by="id") %>%
   rename(edgeID=id,
          from=from_id,
@@ -144,13 +136,9 @@ edges <- edgesmel %>%
                   lns_no_f,lns_no_b,lns_psv_b,cyclwy_b,cyc_wd_f,cyc_wd_b,
                   quitnss,avg_wdt_md,avg_wdt_mp,avg_wdt,slope,bffrdst,spedKPH,
                   crs_cnt,cros_rt,bik_cnt,bike_rt,RtSrf_m,cyclesm,highstr,
-<<<<<<< HEAD
                   indp_sc,ngp_scr,shannon,simpson) %>%
   mutate(across(c(edgeID,from,to,osm_id,maxspeed,quitnss)))
 
-=======
-                  indp_sc,ngp_scr,shannon,simpson)
->>>>>>> 0d75494290f990df2eeffe98b3276ce3711da648
 
 st_write(edges, "./output/edgesMelbourne.gpkg", delete_dsn = T)
 
@@ -160,8 +148,5 @@ edges_direct <- edges %>%
   mutate(geom=paste0("LINESTRING(",fromx," ",fromy,",",tox," ",toy,")")) %>%
   st_as_sf(wkt = "geom", crs = 28355)
 st_write(edges_direct, "./output/edgesMelbourneDirect.gpkg", delete_dsn = T)
-
-
-
 
 
