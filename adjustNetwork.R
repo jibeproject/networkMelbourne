@@ -14,7 +14,10 @@ options(dplyr.summarise.inform = FALSE) # make dplyr stop blabbing about summari
 nodesmel = st_read("data/melbourneClipped_nodes.sqlite")
 edgesmel = st_read("data/melbourneClipped_edges.sqlite")
 # shouldn't be any multi-linestrings, but better to be certain
-edgesmel <- edgesmel %>% st_cast("LINESTRING")
+edgesmel <- edgesmel %>%
+  st_cast("LINESTRING") %>%
+  mutate(osm_id_full=osm_id)
+edgesmel$osm_id <- gsub("_.*", "", edgesmel$osm_id)
 
 
 
@@ -71,7 +74,7 @@ roadtyp <- read.csv("data/roadtyp.csv")
 edge_attributes <- readRDS("data/POIs_joined.rds")
 
 edges <- edgesmel %>%
-  st_drop_geometry() %>%
+  # st_drop_geometry() %>%
   left_join(edge_attributes, by="id") %>%
   rename(edgeID=id,
          from=from_id,
@@ -133,7 +136,9 @@ edges <- edgesmel %>%
                   lns_no_f,lns_no_b,lns_psv_b,cyclwy_b,cyc_wd_f,cyc_wd_b,
                   quitnss,avg_wdt_md,avg_wdt_mp,avg_wdt,slope,bffrdst,spedKPH,
                   crs_cnt,cros_rt,bik_cnt,bike_rt,RtSrf_m,cyclesm,highstr,
-                  indp_sc,ngp_scr,shannon,simpson)
+                  indp_sc,ngp_scr,shannon,simpson) %>%
+  mutate(across(c(edgeID,from,to,osm_id,maxspeed,quitnss)))
+
 
 st_write(edges, "./output/edgesMelbourne.gpkg", delete_dsn = T)
 
