@@ -9,4 +9,8 @@ Run ```/network/NetworkGeneratorJIBE.R``` to generate the network geometries for
 
 ```processNetwork.R``` calculates quietness, positive and negative POIs, whether an edge is part of a highstreet, and Shannon diversity. Main difference is the edge snapping takes place in postgres. This has sped up the process from several days to around 30 seconds
 
+<<<<<<< HEAD
 ```adjustNetwork.R``` performs the final tweaking to ensure the Melbourne network's attributes are compatible with the Manchester network.
+=======
+```adjustNetwork.R`` performs the final tweaking to ensure the Melbourne network's attributes are compatible with the Manchester network.
+>>>>>>> 0d75494290f990df2eeffe98b3276ce3711da648
