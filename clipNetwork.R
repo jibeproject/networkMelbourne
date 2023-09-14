@@ -44,9 +44,22 @@ nodes_clipped <- nodes %>%
   filter(lengths(st_intersects(., study_region, prepared = TRUE)) > 0)
 node_ids <- nodes_clipped$id
 
-# edges that contain these nodes
-edges_filtered <- edges %>%
-  filter(from_id %in% node_ids | to_id %in% node_ids)
+# roads that trucks can use
+truck_roads <- c("motorway", "motorway_link", "trunk", "trunk_link",
+                 "primary", "primary_link", "secondary", "secondary_link",
+                 "tertiary", "tertiary_link")
+
+# edges that allow trucks
+edges_trucks <- edges %>%
+  mutate(is_truck = ifelse(highway%in%truck_roads,1,0)) %>%
+  dplyr::relocate(is_truck,.after=is_car) %>%
+  mutate(modes=ifelse(is_truck==1,paste0(modes,",truck"),modes))
+
+# edges that allow trucks or have at least one endpoint within the study region
+edges_filtered <- edges_trucks %>%
+  filter(is_truck==1 | from_id %in% node_ids | to_id %in% node_ids)
+
+
 
 # endpoint nodes of these edges
 nodes_filtered <- nodes %>%
