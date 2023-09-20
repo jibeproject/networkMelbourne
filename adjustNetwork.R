@@ -137,7 +137,8 @@ edges <- edgesmel %>%
                   quitnss,avg_wdt_md,avg_wdt_mp,avg_wdt,slope,bffrdst,spedKPH,
                   crs_cnt,cros_rt,bik_cnt,bike_rt,RtSrf_m,cyclesm,highstr,
                   indp_sc,ngp_scr,shannon,simpson) %>%
-  mutate(across(c(edgeID,from,to,osm_id,maxspeed,quitnss), as.integer))
+  mutate(across(c(edgeID,from,to,osm_id,maxspeed,quitnss,permlanes), as.integer)) %>%
+  mutate(across(c(is_oneway,is_cycle,is_walk,is_car,is_truck), as.logical))
 
 
 st_write(edges, "./output/edgesMelbourne.gpkg", delete_dsn = T)

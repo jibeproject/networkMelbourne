@@ -51,7 +51,7 @@ truck_roads <- c("motorway", "motorway_link", "trunk", "trunk_link",
 
 # edges that allow trucks
 edges_trucks <- edges %>%
-  mutate(is_truck = ifelse(highway%in%truck_roads,1,0)) %>%
+  mutate(is_truck = ifelse(highway%in%truck_roads,1,0) & is_car == 1) %>%
   dplyr::relocate(is_truck,.after=is_car) %>%
   mutate(modes=ifelse(is_truck==1,paste0(modes,",truck"),modes))
 
