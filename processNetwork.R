@@ -36,7 +36,6 @@ output_values <- network %>%
   st_drop_geometry() %>%
   dplyr::select(id,highway,cycleway)
 
-
 # connect to database
 conn = dbConnect(PostgreSQL(), dbname="jibenetwork", user="postgres", password="", host="localhost")
 
@@ -45,6 +44,35 @@ st_write(network, conn, layer="edges")
 dbSendQuery(conn,statement="CREATE INDEX edges_gix ON edges USING GIST (geom);")
 
 
+#  Urban regions ----------------------------------------------------------
+
+# importing urban regions
+urban_regions <- st_read("data/urban_regions.sqlite") %>% 
+  st_as_sf() %>%
+  st_set_crs(28355)
+
+# We run into trouble if the geometry column is 'GEOMETRY' instead of 'geom'
+if('GEOMETRY'%in%colnames(urban_regions)) urban_regions <- urban_regions %>% rename(geom=GEOMETRY)
+
+# adding the urtban regions to the database, and generating a spatial index to speed up query
+st_write(urban_regions, conn, layer="urban_regions")
+dbSendQuery(conn,statement="CREATE INDEX urban_regions_gix ON urban_regions USING GIST (geom);")
+
+# get ids of edges within urban regions
+dbSendQuery(conn,statement="
+  DROP TABLE IF EXISTS urban_edges;
+  CREATE TABLE urban_edges AS
+  SELECT e.id
+  FROM urban_regions AS u,
+       edges AS e
+  WHERE ST_Intersects(u.geom,e.geom)
+;")
+
+urban_edges <- dbGetQuery(conn,"SELECT * FROM urban_edges;") %>% pull(id)
+
+# add urban regions
+output_values <- output_values %>% 
+  mutate(urban = ifelse(id%in%urban_edges, T, F))
 
 # POI ---------------------------------------------------------------------
 

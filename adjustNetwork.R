@@ -136,7 +136,7 @@ edges <- edgesmel %>%
                   lns_no_f,lns_no_b,lns_psv_b,cyclwy_b,cyc_wd_f,cyc_wd_b,
                   quitnss,avg_wdt_md,avg_wdt_mp,avg_wdt,slope,bffrdst,spedKPH,
                   crs_cnt,cros_rt,bik_cnt,bike_rt,RtSrf_m,cyclesm,highstr,
-                  indp_sc,ngp_scr,shannon,simpson) %>%
+                  indp_sc,ngp_scr,shannon,simpson,urban) %>%
   mutate(across(c(edgeID,from,to,osm_id,maxspeed,quitnss,permlanes), as.integer)) %>%
   mutate(across(c(is_oneway,is_cycle,is_walk,is_car,is_truck), as.logical))
 
