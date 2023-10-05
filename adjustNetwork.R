@@ -93,7 +93,7 @@ edges <- edgesmel %>%
   mutate(surface = ifelse(is.na(surface),"asphalt",surface)) %>%
   mutate(segrgtd = ifelse(cycleway%in%c("separated_lane","bikepath"),"yes","no")) %>%
   mutate(sidewlk = case_when(
-    is_car==0               ~ "Not Applicable",
+    is_car==0                              ~ "Not Applicable",
     is_car==1 & (is_walk==1 | is_cycle==1) ~ "both",
     is_car==1 & is_walk==0 & is_cycle==0   ~ "no"
   )) %>%
@@ -135,8 +135,8 @@ edges <- edgesmel %>%
                   length,maxspeed,surface,segrgtd,sidewlk,cyclwy_f,lns_psv_f,
                   lns_no_f,lns_no_b,lns_psv_b,cyclwy_b,cyc_wd_f,cyc_wd_b,
                   quitnss,avg_wdt_md,avg_wdt_mp,avg_wdt,slope,bffrdst,spedKPH,
-                  crs_cnt,cros_rt,bik_cnt,bike_rt,RtSrf_m,cyclesm,highstr,
-                  indp_sc,ngp_scr,shannon,simpson,urban) %>%
+                  negpoi_hgv_score,crs_cnt,cros_rt,bik_cnt,bike_rt,RtSrf_m,cyclesm,
+                  highstr,indp_sc,ngp_scr,shannon,simpson,urban) %>%
   mutate(across(c(edgeID,from,to,osm_id,maxspeed,quitnss,permlanes), as.integer)) %>%
   mutate(across(c(is_oneway,is_cycle,is_walk,is_car,is_truck), as.logical))
 

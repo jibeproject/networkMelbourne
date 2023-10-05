@@ -44,6 +44,7 @@ st_write(network, conn, layer="edges")
 dbSendQuery(conn,statement="CREATE INDEX edges_gix ON edges USING GIST (geom);")
 
 
+
 #  Urban regions ----------------------------------------------------------
 
 # importing urban regions
@@ -73,6 +74,47 @@ urban_edges <- dbGetQuery(conn,"SELECT * FROM urban_edges;") %>% pull(id)
 # add urban regions
 output_values <- output_values %>% 
   mutate(urban = ifelse(id%in%urban_edges, T, F))
+
+
+
+# Negative freight (negpoi_hgv_score) -------------------------------------
+
+# get all bus stops
+bus_stops <- st_read("data/pt_stops.sqlite") %>%
+  filter(type=="bus")  %>%
+  mutate(id=row_number())
+
+# We run into trouble if the geometry column is 'GEOMETRY' instead of 'geom'
+if('GEOMETRY'%in%colnames(bus_stops)) bus_stops <- bus_stops%>%rename(geom=GEOMETRY)
+
+# add to database and generate spatial index
+st_write(bus_stops, conn, layer="bus_stops")
+dbSendQuery(conn,statement="CREATE INDEX bus_stops_gix ON bus_stops USING GIST (geom);")
+
+# snap bus stops to nearest edge (within 50m)
+dbSendQuery(conn,statement="
+  DROP TABLE IF EXISTS bus_stops_snapped;
+  CREATE TABLE bus_stops_snapped AS
+  SELECT DISTINCT ON (n.id) n.id, e.id AS closest_edge_id
+  FROM bus_stops AS n
+  JOIN edges AS e ON ST_DWithin(n.geom, e.geom, 50)
+  ORDER BY n.id, ST_Distance(n.geom, e.geom)
+;")
+
+# ids of edges with a positive poi
+bus_stops_snapped <- dbGetQuery(conn,"SELECT * FROM bus_stops_snapped;")
+
+# sum count the number of bus stops for each edge
+bus_stops_count <- bus_stops_snapped %>%
+  group_by(closest_edge_id) %>%
+  summarise(negpoi_hgv_score = n()) %>%
+  rename(id=closest_edge_id)
+
+# join to the network
+output_values <- output_values %>% 
+  left_join(bus_stops_count, by="id")
+
+
 
 # POI ---------------------------------------------------------------------
 
