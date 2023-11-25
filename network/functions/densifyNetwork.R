@@ -23,7 +23,7 @@
 # "steps"          ,  22
 
 densifyNetwork <- function(networkList, minimum_length=400, densifyBikeways=F){
-  # networkList<-networkConnected;minimum_length = 400
+  # networkList<-networkConnected;minimum_length = 200 ; densifyBikeways=F
   nodes_df <- networkList[[1]]
   links_df <- networkList[[2]] %>%
     mutate(tmp_id=row_number())

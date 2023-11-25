@@ -7,32 +7,12 @@ library(igraph)
 # endpoint within the study region, and then finding the largest connected
 # component in order to remove any disconnected components arising from the clip
 
-# finds the largest connected component
-largestConnectedComponent <- function(n_df,l_df){
-  l_df_no_geom <- l_df %>%
-    st_drop_geometry() %>%
-    dplyr::select(from=from_id,to=to_id)
-  # remove the disconnected bits
-  
-  # Making the graph for the intersections
-  g <- graph_from_data_frame(l_df_no_geom, directed = FALSE) 
+source("clipFunctions.R")
 
-  # Getting components
-  comp <- components(g)
-  nodes_in_largest_component <- data.frame(node_id=as.integer(names(comp$membership)),
-                                           cluster_id=comp$membership, row.names=NULL) %>%
-    filter(cluster_id==which.max(comp$csize)) %>%
-    pull(node_id) %>%
-    base::unique()
-  
-  n_df_filtered <- n_df %>%
-    filter(id%in%nodes_in_largest_component) 
-  
-  l_df_filtered <- l_df %>%
-    filter(from_id%in%nodes_in_largest_component & to_id%in%nodes_in_largest_component)
-  
-  return(list(n_df_filtered,l_df_filtered))
-}
+
+
+
+
 
 
 study_region <- st_read("data/region_buffer.sqlite")
@@ -68,8 +48,16 @@ nodes_filtered <- nodes %>%
 # filter nodes and edges to largest connected component
 largest_component <- largestConnectedComponent(nodes_filtered,edges_filtered)
 
+# ensure transport is a directed routeable graph for each mode (i.e., connected
+# subgraph). The first function ensures a connected directed subgraph and the
+# second function ensures a connected subgraph but doesn't consider directionality.
+# We car and bike modes are directed, but walk is undirected.
+networkNonDisconnected <- largestDirectedNetworkSubgraph(largest_component,'car,bike,truck')
+networkConnected <- largestNetworkSubgraph(networkNonDisconnected,'walk')
+
+
 # export to file
-nodes_final <- largest_component[[1]]
-edges_final <- largest_component[[2]]
+nodes_final <- networkConnected[[1]]
+edges_final <- networkConnected[[2]]
 st_write(nodes_final, "data/melbourneClipped_nodes.sqlite", delete_dsn=T)
 st_write(edges_final, "data/melbourneClipped_edges.sqlite", delete_dsn=T)

@@ -129,6 +129,66 @@ if('GEOMETRY'%in%colnames(networkInput[[2]])) {
   networkInput[[2]]<-networkInput[[2]]%>%rename(geom=GEOMETRY)
 }
 
+
+# adding in additional edges to fix connectivity issues
+nodes_coordinates <- networkInput[[1]] %>%
+  st_drop_geometry() %>%
+  cbind(st_coordinates(networkInput[[1]])) %>%
+  dplyr::select(id,X,Y)
+
+extra_links <- tribble(
+  ~osm_id  , ~length, ~from_id, ~to_id ,
+  28662098 , 1      , 305675  ,  305674,
+  252833216, 1.5    , 299985  ,  299996,
+  # 8066126  , 1      , 299985  ,  299995
+) %>%
+  left_join(nodes_coordinates,by=c("from_id"="id")) %>%
+  rename(fromX=X,fromY=Y) %>%
+  left_join(nodes_coordinates,by=c("to_id"="id")) %>%
+  rename(toX=X,toY=Y) %>%
+  mutate(geom=paste0("LINESTRING(",fromX," ",fromY,",",toX," ",toY,")")) %>%
+  st_as_sf(wkt = "geom", crs = outputCrs) %>%
+  dplyr::select(osm_id,length,from_id,to_id)
+
+combined_links <- bind_rows(
+  networkInput[[2]],
+  extra_links
+) %>% st_as_sf()
+
+addEndpoints <- function(fromX,fromY,toX,toY,geom) {
+  geomMatrix <- st_coordinates(geom)[,1:2]
+  if(!is.na(fromX) ) {
+    geomMatrix <- rbind(c(fromX,fromY),geomMatrix)
+  }
+  if(!is.na(toX) ) {
+    geomMatrix <- rbind(geomMatrix,c(toX,toY))
+  }
+  geomFinal <- st_linestring(geomMatrix)
+  return(geomFinal)
+}
+
+
+new_geom <- rbind(
+  c(nodes_coordinates%>%filter(id==299995)%>%pull(X),
+    nodes_coordinates%>%filter(id==299995)%>%pull(Y)
+    ),
+  combined_links%>%filter(from_id==299985 & to_id==294460)%>%st_coordinates()%>%
+    data.frame()%>%dplyr::select(X,Y)%>%as.matrix()
+) %>%
+  st_linestring()
+
+# moving an endpoint
+
+st_geometry(combined_links)[combined_links$from_id==299985 & combined_links$to_id==294460] <- new_geom
+
+combined_links <- combined_links %>%
+  # filter(from_id==299985 & to_id==294460) %>%
+  mutate(from_id=ifelse(from_id==299985 & to_id==294460,
+                        299995,
+                        from_id))
+         
+networkInput[[2]] <- combined_links
+
 cat(paste0("Network input, nodes:\n"))
 str(networkInput[[1]])
 # print.data.frame(head(networkInput[[1]]))
@@ -175,52 +235,60 @@ cat(paste0("\nlargestComponent, edges:\n"))
 str(largestComponent[[2]])
 cat(paste0("\n"))
 
-# simplify intersections while preserving attributes and original geometry.
-system.time(intersectionsSimplified <- simplifyIntersections(largestComponent[[1]],
-                                                             largestComponent[[2]],
-                                                             shortLinkLength,
-                                                             outputCrs))
+# # simplify intersections while preserving attributes and original geometry.
+# system.time(intersectionsSimplified <- simplifyIntersections(largestComponent[[1]],
+#                                                              largestComponent[[2]],
+#                                                              shortLinkLength,
+#                                                              outputCrs))
+# 
+# # Merge edges going between the same two nodes, picking the shortest geometry.
+# # * One-way edges going in the same direction will be merged
+# # * Pairs of one-way edges in opposite directions will be merged into a two-way edge.
+# # * Two-way edges will be merged regardless of direction.
+# # * One-way edges will NOT be merged with two-way edges.
+# # * Non-car edges do NOT count towards the merged lane count (permlanes)
+# system.time(edgesCombined <- combineRedundantEdges(intersectionsSimplified[[1]],
+#                                                    intersectionsSimplified[[2]],
+#                                                    outputCrs))
+# 
+# # Merge one-way and two-way edges going between the same two nodes. In these 
+# # cases, the merged attributes will be two-way.
+# # This guarantees that there will only be a single edge between any two nodes.
+# system.time(combinedUndirectedAndDirected <- 
+#               combineUndirectedAndDirectedEdges(edgesCombined[[1]],
+#                                                 edgesCombined[[2]],
+#                                                 outputCrs))
+# 
+# # If there is a chain of edges between intersections, merge them together
+# system.time(edgesSimplified <- simplifyLines(combinedUndirectedAndDirected[[1]],
+#                                              combinedUndirectedAndDirected[[2]]))
+# 
+# # Remove dangles
+# system.time(noDangles <- removeDangles(edgesSimplified[[1]],edgesSimplified[[2]],
+#                                        minDangleLinkLengh))
+# 
+# # Do a second round of simplification.
+# system.time(edgesCombined2 <- combineRedundantEdges(noDangles[[1]],
+#                                                     noDangles[[2]],
+#                                                     outputCrs))
+# system.time(combinedUndirectedAndDirected2 <- 
+#               combineUndirectedAndDirectedEdges(edgesCombined2[[1]],
+#                                                 edgesCombined2[[2]],
+#                                                 outputCrs))
+# 
+# system.time(edgesSimplified2 <- simplifyLines(combinedUndirectedAndDirected2[[1]],
+#                                               combinedUndirectedAndDirected2[[2]]))
+# system.time(edgesCombined3 <- combineRedundantEdges(edgesSimplified2[[1]],
+#                                                     edgesSimplified2[[2]],
+#                                                     outputCrs))
 
-# Merge edges going between the same two nodes, picking the shortest geometry.
-# * One-way edges going in the same direction will be merged
-# * Pairs of one-way edges in opposite directions will be merged into a two-way edge.
-# * Two-way edges will be merged regardless of direction.
-# * One-way edges will NOT be merged with two-way edges.
-# * Non-car edges do NOT count towards the merged lane count (permlanes)
-system.time(edgesCombined <- combineRedundantEdges(intersectionsSimplified[[1]],
-                                                   intersectionsSimplified[[2]],
-                                                   outputCrs))
+edgesCombined3 <- largestComponent
 
-# Merge one-way and two-way edges going between the same two nodes. In these 
-# cases, the merged attributes will be two-way.
-# This guarantees that there will only be a single edge between any two nodes.
-system.time(combinedUndirectedAndDirected <- 
-              combineUndirectedAndDirectedEdges(edgesCombined[[1]],
-                                                edgesCombined[[2]],
-                                                outputCrs))
-
-# If there is a chain of edges between intersections, merge them together
-system.time(edgesSimplified <- simplifyLines(combinedUndirectedAndDirected[[1]],
-                                             combinedUndirectedAndDirected[[2]]))
-
-# Remove dangles
-system.time(noDangles <- removeDangles(edgesSimplified[[1]],edgesSimplified[[2]],
-                                       minDangleLinkLengh))
-
-# Do a second round of simplification.
-system.time(edgesCombined2 <- combineRedundantEdges(noDangles[[1]],
-                                                    noDangles[[2]],
-                                                    outputCrs))
-system.time(combinedUndirectedAndDirected2 <- 
-              combineUndirectedAndDirectedEdges(edgesCombined2[[1]],
-                                                edgesCombined2[[2]],
-                                                outputCrs))
-
-system.time(edgesSimplified2 <- simplifyLines(combinedUndirectedAndDirected2[[1]],
-                                              combinedUndirectedAndDirected2[[2]]))
-system.time(edgesCombined3 <- combineRedundantEdges(edgesSimplified2[[1]],
-                                                    edgesSimplified2[[2]],
-                                                    outputCrs))
+# adding X and Y values since we don't run the simplification steps
+nodesWithXY <- edgesCombined3[[1]]
+nodesWithXY <- nodesWithXY %>%
+  cbind(st_coordinates(nodesWithXY))
+edgesCombined3[[1]] <- nodesWithXY
 
 networkMode <- addMode(edgesCombined3)
 
@@ -231,24 +299,28 @@ networkMode <- addMode(edgesCombined3)
 networkNonDisconnected <- largestDirectedNetworkSubgraph(networkMode,'car,bike')
 networkConnected <- largestNetworkSubgraph(networkNonDisconnected,'walk')
 
-# densify the network so that no residential streets are longer than 500m
-if (addElevation==T & densifyBikeways==F) message("Consider changing densifyBikeways to true when addElevation is true to ge a more accurate slope esimation for bikeways")
-networkDensified <- densifyNetwork(networkConnected,desnificationMaxLengh,
-                                   densifyBikeways)
+networkDensified <- networkConnected
 
-# adding destinations layer
-if (addDestinationLayer) {
-  destinations <- addDestinations(networkDensified[[1]],
-                                  networkDensified[[2]],
-                                  osmPbfExtract,
-                                  outputCrs)
-}
+# # densify the network so that no residential streets are longer than 500m
+# if (addElevation==T & densifyBikeways==F) message("Consider changing densifyBikeways to true when addElevation is true to ge a more accurate slope esimation for bikeways")
+# networkDensified <- densifyNetwork(networkConnected,desnificationMaxLengh,
+#                                    densifyBikeways)
+# 
+# # adding destinations layer
+# if (addDestinationLayer) {
+#   destinations <- addDestinations(networkDensified[[1]],
+#                                   networkDensified[[2]],
+#                                   osmPbfExtract,
+#                                   outputCrs)
+# }
 
 # simplify geometry so all edges are straight lines
 # system.time(networkDirect <-
 #               makeEdgesDirect(networkDensified[[1]],
 #                               networkDensified[[2]],
 #                               outputCrs))
+
+# NOT ACTUALLY MAKING THE NETWORK DIRECT HERE
 system.time(networkDirect <-
               makeEdgesUnDirect(networkDensified[[1]],
                               networkDensified[[2]]))

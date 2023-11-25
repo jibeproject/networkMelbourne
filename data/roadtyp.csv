@@ -1,79 +1,92 @@
 highway,cycleway,is_cycle,roadtyp
 residential,NA,1,Residential Road - Cycling Allowed
-unclassified,NA,1,Minor Road - Cycling Allowed
+primary,NA,1,Main Road - Cycling Allowed
+residential,shared_street,1,Living Street
+unclassified,NA,0,Special Road - Cycling Forbidden
+secondary,NA,1,Minor Road - Cycling Allowed
 cycleway,shared_path,1,Shared Path
 tertiary,NA,1,Minor Road - Cycling Allowed
 service,NA,1,Minor Road - Cycling Allowed
-secondary,NA,1,Minor Road - Cycling Allowed
-primary,NA,1,Main Road - Cycling Allowed
 track,NA,1,Minor Road - Cycling Allowed
-trunk,NA,0,motorway_link - Cycling Forbidden
-path,NA,0,Pedestrian Path - Cycling Forbidden
-tertiary,simple_lane,1,Cycleway
+tertiary,NA,0,Path - Cycling Forbidden
 footway,NA,0,Pedestrian Path - Cycling Forbidden
+unclassified,NA,1,Minor Road - Cycling Allowed
+path,NA,0,Pedestrian Path - Cycling Forbidden
+trunk,NA,0,motorway_link - Cycling Forbidden
+secondary_link,NA,1,Trunk Road Link - Cycling Allowed
+residential,simple_lane,1,Cycleway
+tertiary,simple_lane,1,Cycleway
 secondary,simple_lane,1,Cycleway
 primary,simple_lane,1,Main Road - Cycling Allowed
-residential,shared_street,1,Living Street
-motorway_link,NA,0,motorway_link - Cycling Forbidden
-secondary_link,NA,1,Trunk Road Link - Cycling Allowed
-primary_link,NA,1,Main Road Link - Cycling Allowed
-tertiary_link,NA,1,Trunk Road Link - Cycling Allowed
-motorway,NA,0,motorway - Cycling Forbidden
-path,NA,1,Minor Road - Cycling Allowed
-footway,NA,1,Minor Road - Cycling Allowed
-trunk_link,NA,0,motorway_link - Cycling Forbidden
 pedestrian,NA,0,Pedestrian Path - Cycling Forbidden
-track,NA,0,Special Road - Cycling Forbidden
-residential,simple_lane,1,Cycleway
-residential,separated_lane,1,Segregated Cycleway
-service,NA,0,Special Road - Cycling Forbidden
+footway,NA,1,Minor Road - Cycling Allowed
+cycleway,bikepath,1,Segregated Cycleway
+path,NA,1,Minor Road - Cycling Allowed
 trunk,simple_lane,0,Path - Cycling Forbidden
-living_street,NA,1,Living Street
-primary,shared_street,1,Living Street
-secondary,shared_street,1,Living Street
-tertiary,NA,0,Path - Cycling Forbidden
-tertiary,shared_street,1,Living Street
-primary_link,NA,0,motorway_link - Cycling Forbidden
+service,NA,0,Special Road - Cycling Forbidden
+motorway,NA,0,motorway - Cycling Forbidden
 steps,NA,0,Special Road - Cycling Forbidden
-trunk_link,simple_lane,0,motorway_link - Cycling Forbidden
+secondary,NA,0,Path - Cycling Forbidden
+tertiary,shared_street,1,Living Street
+primary_link,NA,1,Main Road Link - Cycling Allowed
+motorway_link,NA,0,motorway_link - Cycling Forbidden
+residential,NA,0,Path - Cycling Forbidden
+primary,NA,0,Path - Cycling Forbidden
+primary_link,NA,0,motorway_link - Cycling Forbidden
+tertiary_link,NA,1,Trunk Road Link - Cycling Allowed
+trunk_link,NA,0,motorway_link - Cycling Forbidden
 unclassified,simple_lane,1,Cycleway
+track,NA,0,Special Road - Cycling Forbidden
+corridor,NA,0,Special Road - Cycling Forbidden
+residential,separated_lane,1,Segregated Cycleway
+secondary,simple_lane,0,Special Road - Cycling Forbidden
+tertiary_link,simple_lane,1,Cycleway
+road,NA,1,Minor Road - Cycling Allowed
+primary,shared_street,0,Special Road - Cycling Forbidden
+living_street,NA,1,Living Street
+secondary_link,NA,0,Special Road - Cycling Forbidden
+primary,shared_street,1,Living Street
+unclassified,simple_lane,0,Special Road - Cycling Forbidden
+secondary,shared_street,1,Living Street
+tertiary_link,NA,0,motorway_link - Cycling Forbidden
+tertiary,simple_lane,0,Path - Cycling Forbidden
+trunk_link,simple_lane,0,motorway_link - Cycling Forbidden
+primary,simple_lane,0,Path - Cycling Forbidden
 motorway_link,simple_lane,0,motorway_link - Cycling Forbidden
 pedestrian,NA,1,Residential Road - Cycling Allowed
 footway,separated_lane,1,Segregated Cycleway
 service,simple_lane,1,Cycleway
-secondary,NA,0,Path - Cycling Forbidden
-primary,NA,0,Path - Cycling Forbidden
-secondary,bikepath,1,Segregated Cycleway
-primary,bikepath,1,Segregated Cycleway
-trunk,bikepath,0,Path - Cycling Forbidden
-residential,NA,0,Path - Cycling Forbidden
-tertiary,simple_lane,0,Path - Cycling Forbidden
-unclassified,NA,0,Special Road - Cycling Forbidden
+tertiary,separated_lane,1,Segregated Cycleway
+residential,simple_lane,0,Special Road - Cycling Forbidden
+primary,separated_lane,0,Special Road - Cycling Forbidden
 service,separated_lane,1,Segregated Cycleway
 primary,separated_lane,1,Segregated Cycleway
-secondary_link,simple_lane,1,Cycleway
-tertiary,separated_lane,1,Segregated Cycleway
-unclassified,shared_street,1,Living Street
 cycleway,shared_path,0,Special Road - Cycling Forbidden
-cycleway,bikepath,1,Segregated Cycleway
-corridor,NA,0,Special Road - Cycling Forbidden
-tertiary_link,simple_lane,1,Cycleway
-path,separated_lane,1,Segregated Cycleway
-track,separated_lane,1,Segregated Cycleway
-road,NA,1,Minor Road - Cycling Allowed
-tertiary,bikepath,1,Segregated Cycleway
-unclassified,separated_lane,1,Segregated Cycleway
-secondary_link,shared_street,1,Living Street
-pedestrian,separated_lane,1,Segregated Cycleway
-secondary,separated_lane,1,Segregated Cycleway
-trunk,separated_lane,0,Path - Cycling Forbidden
-tertiary_link,shared_street,1,Living Street
-tertiary_link,NA,0,motorway_link - Cycling Forbidden
-steps,separated_lane,1,Segregated Cycleway
-residential,bikepath,1,Segregated Cycleway
-motorway,simple_lane,0,motorway - Cycling Forbidden
 primary_link,simple_lane,1,Cycleway
+secondary_link,simple_lane,0,Special Road - Cycling Forbidden
+steps,separated_lane,1,Segregated Cycleway
+unclassified,shared_street,1,Living Street
+steps,NA,1,Minor Road - Cycling Allowed
+unclassified,shared_street,0,Path - Cycling Forbidden
+secondary,shared_street,0,Path - Cycling Forbidden
+residential,shared_street,0,Path - Cycling Forbidden
+secondary,separated_lane,1,Segregated Cycleway
+path,separated_lane,1,Segregated Cycleway
+motorway,simple_lane,0,motorway - Cycling Forbidden
+track,separated_lane,1,Segregated Cycleway
+pedestrian,separated_lane,1,Segregated Cycleway
+footway,separated_lane,0,Path - Cycling Forbidden
+secondary_link,shared_street,1,Living Street
+steps,separated_lane,0,Path - Cycling Forbidden
+primary_link,simple_lane,0,Path - Cycling Forbidden
+tertiary_link,shared_street,1,Living Street
+unclassified,separated_lane,1,Segregated Cycleway
+secondary_link,simple_lane,1,Cycleway
+living_street,NA,0,Path - Cycling Forbidden
+residential,separated_lane,0,Path - Cycling Forbidden
+trunk,separated_lane,0,Path - Cycling Forbidden
+tertiary_link,separated_lane,1,Segregated Cycleway
 road,NA,0,Path - Cycling Forbidden
-primary_link,separated_lane,1,Segregated Cycleway
+tertiary,shared_street,0,Living Street
+cycleway,shared_street,1,Cycleway
 pt,NA,0,Special Road - Cycling Forbidden
-primary,simple_lane,0,Path - Cycling Forbidden
