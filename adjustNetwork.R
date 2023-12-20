@@ -19,7 +19,7 @@ edgesmel <- edgesmel %>%
   mutate(osm_id_full=osm_id)
 edgesmel$osm_id <- gsub("_.*", "", edgesmel$osm_id)
 
-
+streetnames <- readRDS("data/network_streetnames.rds")
 
 # Nodes adjustment --------------------------------------------------------
 
@@ -74,6 +74,7 @@ roadtyp <- read.csv("data/roadtyp.csv")
 edge_attributes <- readRDS("data/POIs_joined.rds")
 
 edges <- edgesmel %>%
+  left_join(streetnames, by="osm_id") %>%
   # st_drop_geometry() %>%
   left_join(edge_attributes, by="id") %>%
   rename(edgeID=id,
