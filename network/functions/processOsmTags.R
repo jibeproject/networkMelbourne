@@ -55,16 +55,6 @@ processOsmTags <- function(osm_df,this_defaults_df){
           df$freespeed[1]=freeSpeed
         }
       }
-      if("lanes" %in% tags) {
-        newLanes=as.integer(tags[which(tags=="lanes")+1])
-        # some osm tags set the number of lanes to zero
-        # added is.na since one of the lanes has a value of "2; 3"
-        if(!is.na(newLanes) & newLanes > 0) {
-          # Lane capacity is per lane and should not be adjusted based on number of lanes
-          # df$laneCapacity[1]= df$laneCapacity[1] * (newLanes/df$permlanes[1])
-          df$permlanes[1]=newLanes
-        }
-      }
       
       df$surface[1]=surface_tags
       if(any(oneway_tags=="yes")) df$is_oneway[1]=1
@@ -78,6 +68,14 @@ processOsmTags <- function(osm_df,this_defaults_df){
       if(any(foot_tags %in% c("yes","designated"))) df$is_walk[1]=1
       if(df$cycleway[1]>0 | any(bicycle_tags %in% c("yes","designated"))) df$is_cycle[1]=1
       if(any(bicycle_tags %in% "no")) df$is_cycle[1]=0
+      
+      if("lanes" %in% tags) {
+        taggedLanes = as.integer(tags[which(tags == "lanes") + 1])
+        newLanes = ifelse(df$is_oneway[1] == 1, taggedLanes, ceiling(taggedLanes/2))
+        if(!is.na(newLanes) & newLanes > 0) {
+          df$permlanes[1] = newLanes
+        }
+      }
     }
     return(df)
   }
