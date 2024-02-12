@@ -41,16 +41,35 @@ WHERE a.osm_id < b.osm_id AND
   a.bridge_or_tunnel = b.bridge_or_tunnel AND
   ST_Intersects(a.geom, b.geom) = TRUE;
 
+
+-- fixing the cases where the line intersections end up as edges. Here we
+-- store their individual endpoints
+DROP TABLE IF EXISTS line_intersections2;
+CREATE TABLE line_intersections2 AS
+  SELECT osm_id_a, osm_id_b, geom
+  FROM line_intersections
+  WHERE ST_GeometryType(geom) = 'ST_Point'
+UNION
+  SELECT osm_id_a, osm_id_b, ST_StartPoint(geom) AS geom
+  FROM line_intersections
+  WHERE ST_GeometryType(geom) = 'ST_LineString'
+UNION
+  SELECT osm_id_a, osm_id_b, ST_EndPoint(geom) AS geom
+  FROM line_intersections
+  WHERE ST_GeometryType(geom) = 'ST_LineString';
+
+
+
 -- group the intersections by osm_id
 DROP TABLE IF EXISTS line_intersections_grouped;
 CREATE TABLE line_intersections_grouped AS
 SELECT c.osm_id, st_unaryunion(st_collect(c.geom)) AS geom
 FROM
  (SELECT a.osm_id_a AS osm_id, a.geom
-  FROM line_intersections as a
+  FROM line_intersections2 as a
   UNION
   SELECT b.osm_id_b AS osm_id, b.geom
-  FROM line_intersections AS b) AS c
+  FROM line_intersections2 AS b) AS c
 GROUP BY osm_id;
 
 -- take the intersections, buffer them 0.01m, and use them to cut the lines they
@@ -286,4 +305,3 @@ FROM
 	) AS c;
 
 CREATE INDEX nodes_attributed2_gix ON nodes_attributed2 USING GIST (geom);
-

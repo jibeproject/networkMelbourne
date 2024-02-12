@@ -48,10 +48,23 @@ nodes_filtered <- nodes %>%
 # filter nodes and edges to largest connected component
 largest_component <- largestConnectedComponent(nodes_filtered,edges_filtered)
 
+# # add is_oneway
+# links_tmp <- largest_component[[2]]
+# links_directed <- left_join(
+#   links_tmp,
+#   links_tmp%>%st_drop_geometry()%>%dplyr::select(to_id2=from_id,from_id2=to_id)%>%dplyr::select(from_id=from_id2,to_id=to_id2)%>%mutate(is_oneway=0)%>%distinct(),
+#   by=c("from_id","to_id")
+# ) %>%
+#   mutate(is_oneway=ifelse(is.na(is_oneway),1,0)) %>%
+#   st_sf()
+# largest_component <- list(largest_component[[1]],links_directed)
+
+
 # ensure transport is a directed routeable graph for each mode (i.e., connected
 # subgraph). The first function ensures a connected directed subgraph and the
 # second function ensures a connected subgraph but doesn't consider directionality.
 # We car and bike modes are directed, but walk is undirected.
+
 networkNonDisconnected <- largestDirectedNetworkSubgraph(largest_component,'car,bike,truck')
 networkConnected <- largestNetworkSubgraph(networkNonDisconnected,'walk')
 
