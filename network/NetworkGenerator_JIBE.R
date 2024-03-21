@@ -146,8 +146,9 @@ makeNetwork<-function(city, outputSubdirectory = "generated_network"){
   
   # GTFS
   addGtfs=T
-  analysis_start = as.Date("2019-10-11","%Y-%m-%d") # Transit Feed start date
-  analysis_end = as.Date("2019-10-17","%Y-%m-%d") # Transit Feed end date
+  # analysis_start = as.Date("2019-10-11","%Y-%m-%d") # Transit Feed start date
+  # analysis_end = as.Date("2019-10-17","%Y-%m-%d") # Transit Feed end date
+  analysis_date = as.Date("2019-10-17","%Y-%m-%d") # Transit Feed analysis date
   
   # Outputs
   # outputSubdirectory=format(Sys.time(),"%d%b%y_%H%M") # date_hour, eg. "17Aug21_1308"
@@ -386,7 +387,8 @@ makeNetwork<-function(city, outputSubdirectory = "generated_network"){
   if(addElevation){ 
     networkRestructured[[1]] <- addElevation2Nodes(networkRestructured[[1]], 
                                                    demFile,
-                                                   ElevationMultiplier)
+                                                   ElevationMultiplier,
+                                                   outputCrs)
     networkRestructured[[2]] <- addElevation2Links(networkRestructured)
   }
   
@@ -412,10 +414,13 @@ makeNetwork<-function(city, outputSubdirectory = "generated_network"){
                                                nodes=networkRestructured[[1]], 
                                                links=networkRestructured[[2]],
                                                gtfs_feed=gtfs_feed,
-                                               analysis_start= analysis_start,
-                                               analysis_end=analysis_end,
+                                               # analysis_start= analysis_start,
+                                               # analysis_end=analysis_end,
+                                               analysis_date=as.Date("2019-10-17","%Y-%m-%d"),
                                                studyRegion=studyRegion,
-                                               outputCrs=outputCrs)) 
+                                               outputCrs=outputCrs,
+                                               onroadBus=F,
+                                               city="Melbourne")) 
   }
   
   networkRestructured[[2]] <- networkRestructured[[2]] %>% mutate(id=row_number())
@@ -462,3 +467,4 @@ makeNetwork<-function(city, outputSubdirectory = "generated_network"){
 ## JUST FOR TESTING
 makeNetwork(city = "Bendigo")
 makeNetwork(city = "Melbourne")
+makeNetwork(city = "Victoria", outputSubdirectory="networkJIBE")
