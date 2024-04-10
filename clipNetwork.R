@@ -15,9 +15,9 @@ source("clipFunctions.R")
 
 
 
-study_region <- st_read("data/region_buffer.sqlite")
-nodes <- st_read("network/output/networkJIBE/network.sqlite", layer="nodes")
-edges <- st_read("network/output/networkJIBE/network.sqlite", layer="links")
+study_region <- st_read("/Users/alan/Projects/JIBE/melbourne/regions/final/region_buffer.sqlite")
+nodes <- st_read("/Users/alan/Projects/JIBE/melbourne/network/intermediate/atom_network/network.sqlite", layer="nodes")
+edges <- st_read("/Users/alan/Projects/JIBE/melbourne/network/intermediate/atom_network/network.sqlite", layer="links")
 
 # nodes within the study region
 nodes_clipped <- nodes %>%
@@ -72,5 +72,5 @@ networkConnected <- largestNetworkSubgraph(networkNonDisconnected,'walk')
 # export to file
 nodes_final <- networkConnected[[1]]
 edges_final <- networkConnected[[2]]
-st_write(nodes_final, "data/melbourneClipped_nodes.sqlite", delete_dsn=T)
-st_write(edges_final, "data/melbourneClipped_edges.sqlite", delete_dsn=T)
+st_write(nodes_final, "/Users/alan/Projects/JIBE/melbourne/network/intermediate/clipped_network/melbourneClipped_nodes.sqlite", delete_dsn=T)
+st_write(edges_final, "/Users/alan/Projects/JIBE/melbourne/network/intermediate/clipped_network/melbourneClipped_edges.sqlite", delete_dsn=T)

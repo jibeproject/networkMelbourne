@@ -10,12 +10,13 @@ makeEdgesUnDirect <- function(nodes_current,edges_current){
 }
 
 makeEdgesDirect2 <- function(nodes_current,edges_current,outputCrs){
-  # simplify the lines so they go straight between their from and to nodes
-  edges_current <- edges_current %>%
-    st_drop_geometry() %>%
-    mutate(geom=paste0("LINESTRING(",fromX," ",fromY,",",toX," ",toY,")")) %>%
-    st_as_sf(wkt = "geom", crs = outputCrs)
-  return(list(nodes_current,edges_current))
+# nodes_current=networkFinal[[1]];edges_current=networkFinal[[2]]
+# simplify the lines so they go straight between their from and to nodes
+edges_current <- edges_current %>%
+st_drop_geometry() %>%
+mutate(geom=paste0("LINESTRING(",fromx," ",fromy,",",tox," ",toy,")")) %>%
+st_as_sf(wkt = "geom", crs = outputCrs)
+return(list(nodes_current,edges_current))
 }
 
 # the restructureData function drops edges_current
@@ -40,7 +41,7 @@ makeNetwork<-function(city, outputSubdirectory = "generated_network"){
   # city = "Melbourne"
   
   # city="Victoria"; outputSubdirectory="networkJIBE"
-
+  
   
   # outputSubdirectory = "generated_network"
   
@@ -374,7 +375,7 @@ makeNetwork<-function(city, outputSubdirectory = "generated_network"){
   networkRestructured <- restructureData(networkDirect, highway_lookup,
                                          defaults_df)
   networkRestructured <- list(keepCrossings(networkDirect[[1]]),
-                               networkRestructured[[2]])
+                              networkRestructured[[2]])
   
   # Doubling capacity for small road segments to avoid bottlenecks
   # Set adjustCapacity to True if this adjustment is desired
@@ -391,6 +392,15 @@ makeNetwork<-function(city, outputSubdirectory = "generated_network"){
                                                    outputCrs)
     networkRestructured[[2]] <- addElevation2Links(networkRestructured)
   }
+  
+  # add identifying link id, so GTFS code works
+  networkRestructured[[2]] <- networkRestructured[[2]] %>%
+    mutate(link_id = row_number())
+  # these need to be lowercase
+  names.to.change <- c("fromX", "fromY", "toX", "toY")
+  networkRestructured[[2]] <- rename_with(networkRestructured[[2]], tolower, any_of(names.to.change))
+  networkRestructured[[2]]
+  
   
   # Adding PT pseudo-network based on GTFS
   # Adjust your analysis start date, end data and gtfs feed name above
@@ -423,7 +433,10 @@ makeNetwork<-function(city, outputSubdirectory = "generated_network"){
                                                city="Melbourne")) 
   }
   
-  networkRestructured[[2]] <- networkRestructured[[2]] %>% mutate(id=row_number())
+  networkRestructured[[2]] <- networkRestructured[[2]] %>%
+    mutate(id=ifelse(is.na(id),row_number(),id)) %>%
+    mutate(link_id = id) %>%
+    mutate(id = row_number())
   
   
   # skipping the oneway part as it's handled in the JIBE code
@@ -464,7 +477,5 @@ makeNetwork<-function(city, outputSubdirectory = "generated_network"){
   sink()
 }
 
-## JUST FOR TESTING
-makeNetwork(city = "Bendigo")
-makeNetwork(city = "Melbourne")
+
 makeNetwork(city = "Victoria", outputSubdirectory="networkJIBE")

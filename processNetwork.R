@@ -22,7 +22,7 @@ options(dplyr.summarise.inform = FALSE) # make dplyr stop blabbing about summari
 # Network import ----------------------------------------------------------
 
 # get road network and filter to non PT links
-network <- st_read("data/melbourneClipped_edges.sqlite") %>% 
+network <- st_read("/Users/alan/Projects/JIBE/melbourne/network/intermediate/clipped_network/melbourneClipped_edges.sqlite") %>% 
   st_as_sf() %>%
   st_set_crs(28355) %>% 
   filter(!modes=="pt")
@@ -48,14 +48,14 @@ dbSendQuery(conn,statement="CREATE INDEX edges_gix ON edges USING GIST (geom);")
 #  Urban regions ----------------------------------------------------------
 
 # importing urban regions
-urban_regions <- st_read("data/urban_regions.sqlite") %>% 
+urban_regions <- st_read("/Users/alan/Projects/JIBE/melbourne/regions/original/urban_regions.sqlite") %>% 
   st_as_sf() %>%
   st_set_crs(28355)
 
 # We run into trouble if the geometry column is 'GEOMETRY' instead of 'geom'
 if('GEOMETRY'%in%colnames(urban_regions)) urban_regions <- urban_regions %>% rename(geom=GEOMETRY)
 
-# adding the urtban regions to the database, and generating a spatial index to speed up query
+# adding the urban regions to the database, and generating a spatial index to speed up query
 st_write(urban_regions, conn, layer="urban_regions")
 dbSendQuery(conn,statement="CREATE INDEX urban_regions_gix ON urban_regions USING GIST (geom);")
 
@@ -80,7 +80,7 @@ output_values <- output_values %>%
 # Negative freight (negpoi_hgv_score) -------------------------------------
 
 # get all bus stops
-bus_stops <- st_read("data/pt_stops.sqlite") %>%
+bus_stops <- st_read("/Users/alan/Projects/JIBE/melbourne/gtfs/final/pt_stops.sqlite") %>%
   filter(type=="bus")  %>%
   mutate(id=row_number())
 
@@ -119,11 +119,10 @@ output_values <- output_values %>%
 # POI ---------------------------------------------------------------------
 
 # get all POI
-poi_all <- st_read("data/POI_Inputs/poi.gpkg")
+poi_all <- st_read("/Users/alan/Projects/JIBE/melbourne/poi/final/poi.gpkg")
 
 # constrain to Greater Melbourne region 
-study_region <- st_read("data/region_buffer.sqlite")
-gm_bound <- st_read("data/region_buffer.sqlite")
+study_region <- st_read("/Users/alan/Projects/JIBE/melbourne/regions/final/region_buffer.sqlite")
 gm_poi <- poi_all %>%
   filter(lengths(st_intersects(., study_region, prepared = TRUE)) > 0)
 
@@ -136,7 +135,7 @@ gm_poi <- poi_all %>%
 # Highstreet --------------------------------------------------------------
 
 # get highstreet codes 
-highstreet <- read.csv("data/POI_Inputs/highstreet.csv") %>%
+highstreet <- read.csv("/Users/alan/Projects/JIBE/melbourne/poi/final/highstreet.csv") %>%
   pull(code)
 gm_poi_highstreets <- gm_poi %>%
   filter(code %in% highstreet) %>%
@@ -189,14 +188,14 @@ output_values <- output_values %>%
 # Positive POIs -----------------------------------------------------------
 
 # the positive POI codes
-positive <- read.csv("data/POI_Inputs/positive.csv") %>%
+positive <- read.csv("/Users/alan/Projects/JIBE/melbourne/poi/final/positive.csv") %>%
   pull(code)
 gm_poi_positive <- gm_poi %>%
   filter(code %in% positive) %>%
   mutate(id=row_number())
 
 # positive codes weights
-positive_wgt <- read.csv("data/POI_Inputs/positive_wgt.csv")
+positive_wgt <- read.csv("/Users/alan/Projects/JIBE/melbourne/poi/final/positive_wgt.csv")
 
 # merge weights
 gm_poi_positive <- gm_poi_positive %>%
@@ -236,14 +235,14 @@ output_values <- output_values %>%
 # Negative POIs -----------------------------------------------------------
 
 # the positive POI codes
-negative <- read.csv("data/POI_Inputs/negative.csv") %>%
+negative <- read.csv("/Users/alan/Projects/JIBE/melbourne/poi/final/negative.csv") %>%
   pull(code)
 gm_poi_negative <- gm_poi %>%
   filter(code %in% negative) %>%
   mutate(id=row_number())
 
 # negative codes weights
-negative_wgt <- read.csv("data/POI_Inputs/negative_wgt.csv")
+negative_wgt <- read.csv("/Users/alan/Projects/JIBE/melbourne/poi/final/negative_wgt.csv")
 
 # merge weights
 gm_poi_negative <- gm_poi_negative %>%
@@ -315,13 +314,13 @@ output_values <- output_values %>%
 
 # read the quietness dataframe. Quietness is assigned based on highway and 
 # cycleway category
-quietness_index <- read.csv("data/POI_Inputs/quietness.csv")
+quietness_index <- read.csv("/Users/alan/Projects/JIBE/melbourne/poi/final/quietness.csv")
 
 # join to the network
 output_values <- output_values %>%
   left_join(quietness_index, by = c("highway","cycleway")) %>%
   dplyr::select(-highway,-cycleway)
 
-saveRDS(output_values,"data/POIs_joined.rds")
+saveRDS(output_values,"/Users/alan/Projects/JIBE/melbourne/network/intermediate/pois_joined/POIs_joined.rds")
 
 

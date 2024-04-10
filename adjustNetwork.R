@@ -11,8 +11,8 @@ options(dplyr.summarise.inform = FALSE) # make dplyr stop blabbing about summari
 
 
 # Reading inputs
-nodesmel = st_read("data/melbourneClipped_nodes.sqlite")
-edgesmel = st_read("data/melbourneClipped_edges.sqlite")
+nodesmel = st_read("/Users/alan/Projects/JIBE/melbourne/network/intermediate/clipped_network/melbourneClipped_nodes.sqlite")
+edgesmel = st_read("/Users/alan/Projects/JIBE/melbourne/network/intermediate/clipped_network/melbourneClipped_edges.sqlite")
 # shouldn't be any multi-linestrings, but better to be certain
 edgesmel <- edgesmel %>%
   st_cast("LINESTRING") %>%
@@ -48,7 +48,7 @@ nodes <- nodesmel %>%
   mutate(z=as.integer(z)) %>%
   select(nodeID=id,z_coor=z,ped_cros,cyc_cros)
 
-st_write(nodes, "./output/nodesMelbourne.gpkg", delete_dsn = T)
+st_write(nodes, "/Users/alan/Projects/JIBE/melbourne/network/final/nodesMelbourne.gpkg", delete_dsn = T)
 
 
 
@@ -71,7 +71,7 @@ crossing_count <- edgesmel %>%
 roadtyp <- read.csv("data/roadtyp.csv")
 
 # attributes calculated in processNetwork.R
-edge_attributes <- readRDS("data/POIs_joined.rds")
+edge_attributes <- readRDS("/Users/alan/Projects/JIBE/melbourne/network/intermediate/pois_joined/POIs_joined.rds")
 
 edges <- edgesmel %>%
   left_join(streetnames, by="osm_id") %>%
@@ -142,13 +142,13 @@ edges <- edgesmel %>%
   mutate(across(c(is_oneway,is_cycle,is_walk,is_car,is_truck), as.logical))
 
 
-st_write(edges, "./output/edgesMelbourne.gpkg", delete_dsn = T)
+st_write(edges, "/Users/alan/Projects/JIBE/melbourne/network/final/edgesMelbourne.gpkg", delete_dsn = T)
 
 # simplify the lines so they go straight between their from and to nodes
 edges_direct <- edges %>%
   st_drop_geometry() %>%
   mutate(geom=paste0("LINESTRING(",fromx," ",fromy,",",tox," ",toy,")")) %>%
   st_as_sf(wkt = "geom", crs = 28355)
-st_write(edges_direct, "./output/edgesMelbourneDirect.gpkg", delete_dsn = T)
+st_write(edges_direct, "/Users/alan/Projects/JIBE/melbourne/network/final/edgesMelbourneDirect.gpkg", delete_dsn = T)
 
 
