@@ -284,4 +284,4 @@ edges.with.LTS <- calculateLTS(edges.for.LTS, input.nodes)
 output.edges <- joinLTS(input.edges, edges.with.LTS)
 
 # write output
-st_write(output.edges, "./output/edgesMelbourne_VGVI_LTS.gpkg")  ## MAYBE NOT CURRENT NAME
+st_write(output.edges, "./output/edgesMelbourne_VGVI_LTS.gpkg", delete_layer = T) 
