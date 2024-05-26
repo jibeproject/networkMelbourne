@@ -51,7 +51,7 @@ makeOnewayTraffic <- function(input.edges, edges.traffic) {
 
 # function to calculate LTS and related impedances
 calculateLTS <- function(edges.for.LTS, input.nodes) {
- 
+  
   # assign LTS to edges 
   # '1' to '4' are categories of increasing stress, as per table below]
   
@@ -60,7 +60,7 @@ calculateLTS <- function(edges.for.LTS, input.nodes) {
   tertiary <- c("tertiary", "tertiary_link")
   secondary <- c("secondary", "secondary_link")
   primary <- c("primary", "primary_link")
-
+  
   edges.with.LTS <- edges.for.LTS %>%
     
     # make speed field (rounded, to avoid floating point issues)
@@ -69,7 +69,7 @@ calculateLTS <- function(edges.for.LTS, input.nodes) {
     mutate(ADT = ifelse(is.na(aadtFwd), 0, aadtFwd)) %>%
     
     # add LTS 
-    mutate(lvl_traf_stress = case_when(
+    mutate(LTS = case_when(
       
       # LTS 1 - off-road paths
       cycleway %in% c("bikepath", "shared_path")                   ~ 1,
@@ -123,17 +123,17 @@ calculateLTS <- function(edges.for.LTS, input.nodes) {
   # #check to test how many in each category
   # LTS_table <- edges.for.LTS %>%
   #   st_drop_geometry() %>%
-  #   group_by(highway, lvl_traf_stress) %>%
+  #   group_by(highway, LTS) %>%
   #   summarise(n = n())
-
+  
   # assign LTS to nodes, based on highest 
   # begin with all nodes (from and to) and the LTS level of the associated link
   node_max_lookup <- rbind(edges.with.LTS %>%
                              st_drop_geometry() %>%
-                             dplyr::select(id = from, LTS = lvl_traf_stress),
+                             dplyr::select(id = from, LTS),
                            edges.with.LTS %>%
                              st_drop_geometry() %>%
-                             dplyr::select(id = to, LTS = lvl_traf_stress)) %>%
+                             dplyr::select(id = to, LTS)) %>%
     group_by(id) %>%
     # find highest level of LTS for links connecting with the node
     summarise(max_LTS = max(LTS)) %>%
@@ -165,8 +165,8 @@ calculateLTS <- function(edges.for.LTS, input.nodes) {
   # - Intersection impedance is calculated as above
   
   buff_imped_df <- data.frame(cbind(LTS = c(1, 2, 3, 4),
-                              buffer = c(0, 5, 10, 25),
-                              imped = c(1, 1.05, 1.10, 1.15)))
+                                    buffer = c(0, 5, 10, 25),
+                                    imped = c(1, 1.05, 1.10, 1.15)))
   
   edges.with.LTS <- edges.with.LTS %>%
     # join node intersection details for the to-node
@@ -176,7 +176,7 @@ calculateLTS <- function(edges.for.LTS, input.nodes) {
               by = c("to" = "nodeID")) %>%
     # join the node max LTS buffer & impedance details for the to-node 
     left_join(., node_max_lookup, by = c("to" = "id")) %>%
-    left_join(., buff_imped_df, by = c("lvl_traf_stress" = "LTS")) %>%
+    left_join(., buff_imped_df, by = "LTS") %>%
     # and the buff_imped_df details for the max LTS
     left_join(., buff_imped_df, by = c("max_LTS" = "LTS"), suffix = c(".a", ".b")) %>%
     
@@ -190,75 +190,8 @@ calculateLTS <- function(edges.for.LTS, input.nodes) {
     # remove unwanted fields
     dplyr::select(-speed, -ped_cros, -max_LTS, -buffer.a, -buffer.b, 
                   -imped.a, -imped.b)
-
+  
   return(edges.with.LTS)
-}
-
-# function to add the LTS and impedance values back to the input edges
-joinLTS <- function(input.edges, edges.with.LTS) {
-  
-  # function to get max value, but return NA if all are NA
-  max_value <- function(column) {
-    if (all(is.na(column))) {
-      return(NA_real_)
-    } else {
-      return(max(column, na.rm = TRUE))
-    }
-  }
-  
-  # make separate fwd/reverse columns for traffic and LTS
-  LTS.fwd_rvs <- edges.with.LTS %>%
-    st_drop_geometry() %>%
-    # add reverse columns for traffic in reverse direction
-    mutate(aadtRvs = ifelse(str_detect(linkID, "rtn"), aadtFwd, NA),
-           aadtRvs_car = ifelse(str_detect(linkID, "rtn"), aadtFwd_car, NA),
-           aadtRvs_truck = ifelse(str_detect(linkID, "rtn"), aadtFwd_truck, NA)) %>%
-    # clear forward columns for traffic in reverse direction
-    mutate(aadtFwd = ifelse(str_detect(linkID, "rtn"), NA, aadtFwd),
-           aadtFwd_car = ifelse(str_detect(linkID, "rtn"), NA, aadtFwd_car),
-           aadtFwd_truck = ifelse(str_detect(linkID, "rtn"), NA, aadtFwd_truck)) %>%
-    # separate LTS columns out into forward and reverse
-    mutate(LTS_fwd = ifelse(str_detect(linkID, "out"), lvl_traf_stress, NA),
-           LTS_link_imped_fwd = ifelse(str_detect(linkID, "out"), LTS_link_imped, NA),
-           LTS_isec_imped_fwd = ifelse(str_detect(linkID, "out"), LTS_isec_imped, NA),
-           LTS_total_imped_fwd = ifelse(str_detect(linkID, "out"), LTS_total_imped, NA),
-           LTS_rvs = ifelse(str_detect(linkID, "rtn"), lvl_traf_stress, NA),
-           LTS_link_imped_rvs = ifelse(str_detect(linkID, "rtn"), LTS_link_imped, NA),
-           LTS_isec_imped_rvs = ifelse(str_detect(linkID, "rtn"), LTS_isec_imped, NA),
-           LTS_total_imped_rvs = ifelse(str_detect(linkID, "rtn"), LTS_total_imped, NA)) %>%
-    # combine out and rtn linkIDs, and summarise by grouped linkID
-    mutate(edgeID = as.numeric(str_extract(linkID, "\\d+"))) %>%
-    group_by(edgeID) %>%
-    summarise(aadt = max_value(aadt),
-              aadtFwd = max_value(aadtFwd),
-              aadtFwd_car = max_value(aadtFwd_car),
-              aadtFwd_truck = max_value(aadtFwd_truck),
-              aadtRvs = max_value(aadtRvs),
-              aadtRvs_car = max_value(aadtRvs_car),
-              aadtRvs_truck = max_value(aadtRvs_truck),
-              LTS_fwd = max_value(LTS_fwd),
-              LTS_link_imped_fwd = max_value(LTS_link_imped_fwd),
-              LTS_isec_imped_fwd = max_value(LTS_isec_imped_fwd),
-              LTS_total_imped_fwd = max_value(LTS_total_imped_fwd),
-              LTS_rvs = max_value(LTS_rvs),
-              LTS_link_imped_rvs = max_value(LTS_link_imped_rvs),
-              LTS_isec_imped_rvs = max_value(LTS_isec_imped_rvs),
-              LTS_total_imped_rvs = max_value(LTS_total_imped_rvs)
-    ) %>%
-    ungroup() 
-  
-  # # check whether aadt equals sum of Fwd and Rvs
-  # exceptions <- LTS.fwd_rvs %>%
-  #   rowwise() %>%
-  #   mutate(aadtchk = sum(aadtFwd, aadtRvs, na.rm = T)) %>%
-  #   ungroup %>%
-  #   filter(aadt != aadtchk) ## 2174 exceptions
-  
-  # join to input edges
-  output.edges <- input.edges %>%
-    left_join(LTS.fwd_rvs, by = "edgeID")
-  
-  return(output.edges)
 }
 
 
@@ -272,7 +205,7 @@ library(stringr)
 # read input file
 input.nodes <- st_read("./data/nodesMelbourne.gpkg")
 input.edges <- st_read("./data/edgesMelbourne_VGVI.gpkg")
-edges.traffic <- st_read("./data/network2ways.gpkg")
+edges.traffic <- st_read("./data/network2way.gpkg")
 
 # make input edges one-way, and join traffic
 edges.for.LTS <- makeOnewayTraffic(input.edges, edges.traffic)
@@ -281,7 +214,12 @@ edges.for.LTS <- makeOnewayTraffic(input.edges, edges.traffic)
 edges.with.LTS <- calculateLTS(edges.for.LTS, input.nodes)
 
 # join LTS to input network
-output.edges <- joinLTS(input.edges, edges.with.LTS)
+output.edges <- edges.traffic %>%
+  left_join(edges.with.LTS %>%
+              st_drop_geometry() %>%
+              dplyr::select(linkID, LTS, LTS_link_imped,
+                            LTS_isec_imped, LTS_total_imped),
+            by = "linkID")
 
 # write output
-st_write(output.edges, "./output/edgesMelbourne_VGVI_LTS.gpkg", delete_layer = T) 
+st_write(output.edges, "./output/network2way_LTS.gpkg", delete_layer = T) 

@@ -17,14 +17,10 @@ Run ```/network/NetworkGenerator_JIBE.R``` to generate the network geometries fo
 
 | Field              | Content                                                  |
 |--------------------|----------------------------------------------------------|
-|aadt                |Total traffic for the link, in both directions if applicable |
-|aadtFwd, aadtFwd_car, aadtFwd_truck |Total traffic, car traffic and truck traffic for the link in the forward direction |
-|aadtRvs, aadtRvs_car, aadtRvs_truck |For two-way links, equivalent traffic details for the link in the reverse direction |
-|LTS_fwd             | Level of Traffic Stress for the link in the forward direction, in 4 levels (1 to 4) |
-|LTS_link_imped_fwd  | Impedance attributable to LTS for the link, in metres, in the forward direction |
-|LTS_isec_imped_fwd  | Impedance attributable to LTS for the intersection at the end of the link, in metres, in the forward direction |
-|LTS_total_imped_fwd | The sum of LTS_link_imped_fwd and LTS_isec_imped_fwd     |
-|LTS_rvs, LTS_link_imped_rvs, LTS_isec_imped_rvs, LTS_total_imped_rvs | For two-way links, equivalent LTS details for the link in the reverse direction |
+|LTS                 | Level of Traffic Stress for the link, in 4 levels (1 to 4) |
+|LTS_link_imped      | Impedance attributable to LTS for the link, in metres    |
+|LTS_isec_imped      | Impedance attributable to LTS for the intersection at the end of the link, in metres |
+|LTS_total_imped     | The sum of LTS_link_imped_fwd and LTS_isec_imped_fwd     |
 
 
 
