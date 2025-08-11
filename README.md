@@ -1,5 +1,7 @@
 # networkMelbourne
-Code for generating the Melbourne transport network
+Code for generating the Melbourne transport network.
+
+The Melbourne network contains a routable street network with modelled exposure covariates for evaluating the behavioural and health impacts of infrastructure and policy scenarios for the Greater Melbourne region in 2018, produced as part of the JIBE project.
 
 # instructions
 
@@ -22,6 +24,8 @@ Run ```/network/NetworkGenerator_JIBE.R``` to generate the network geometries fo
 |LTS_isec_imped      | Impedance attributable to LTS for the intersection at the end of the link, in metres |
 |LTS_total_imped     | The sum of LTS_link_imped_fwd and LTS_isec_imped_fwd     |
 
+# documentation
+See ```network modelling methods.pdf``` for a description of the method for creating the Melbourne network, which includes the steps implemented in this repository, as well as other steps (and details of the repositories where their code is located) as described in that document.
 
 
 
