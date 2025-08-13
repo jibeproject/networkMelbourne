@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/640644778.svg)](https://doi.org/10.5281/zenodo.16840957)
+
 # networkMelbourne
 Code for generating the Melbourne transport network.
 
