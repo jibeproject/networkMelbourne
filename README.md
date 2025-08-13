@@ -1,7 +1,7 @@
 # networkMelbourne
 Code for generating the Melbourne transport network.
 
-The Melbourne network contains a routable street network with modelled exposure covariates for evaluating the behavioural and health impacts of infrastructure and policy scenarios for the Greater Melbourne region in 2018, produced as part of the JIBE project.
+The Melbourne network contains a routable street network with modelled exposure covariates for evaluating the behavioural and health impacts of infrastructure and policy scenarios for the Greater Melbourne region (Australia) in 2018, produced as part of the JIBE project. The network covers Greater Melbourne and, for major roads, also extends to the rest of the State of Victoria.
 
 # instructions
 
