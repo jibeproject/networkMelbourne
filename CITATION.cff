@@ -39,6 +39,6 @@ authors:
   orcid: "https://orcid.org/0000-0002-9238-0375"
 title: "Network modelling for Melbourne (JIBE)"
 version: 1.0.0
-doi: tbc
+doi: 10.5281/zenodo.16840958
 date-released: 2025-08-13
 url: "https://github.com/jibeproject/networkMelbourne"
